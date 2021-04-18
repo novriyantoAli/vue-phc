@@ -32,9 +32,9 @@
             </v-card-text>
             <v-card-actions>
               <div class="flex-grow-1"></div>
-              <v-btn color="primary" :disabled="!valid" @click="doLogin"
-                >Login</v-btn
-              >
+              <v-btn color="primary" :disabled="!valid" @click="doLogin">
+                <span class="spinner-border spinner-border-sm" v-show="loading"></span> Login
+              </v-btn>
             </v-card-actions>
           </v-card>
           <v-snackbar v-model="snackbar" bottom>
@@ -47,6 +47,7 @@
 </template>
  
 <script>
+import { authenticationService } from '@/_services';
 export default {
   props: {
     source: String,
@@ -71,24 +72,42 @@ export default {
     result: null,
     error_message: "",
   }),
+  created () {
+    // redirect to home if already logged in
+    if (authenticationService.currentUserValue) { 
+      return this.$router.push({ name: "home" });
+    }
+    // get return url from route parameters or default to '/'
+    this.returnUrl = this.$route.query.returnUrl || '/';
+  },
   methods: {
     reset() {
       this.$refs.form.reset();
     },
     doLogin() {
-      const axios = require("axios");
-      
-      const form = new FormData();
-      form.append('nik', this.nik);
-      form.append('password', this.password)
-      
-      axios
-        .post("http://localhost:3000/api/login", form).then((response) => {
-          this.result = response.data;
-          this.$store.state.user = this.result.nik;
-          this.$store.state.isLogin = true;
-          this.$store.state.jwt_token = this.result.token;
-          this.$router.push({ name: "Profile" });
+      this.loading = true
+
+      authenticationService.login(this.nik, this.password).then(
+        user => {
+          this.error_message = "wellcome "+user.nik;
+          this.$router.push(this.returnUrl);
+          this.loading = false
+        }, 
+        error => {
+          console.log(error);
+
+          this.loading = false;
+          this.error_message = error;
+          this.snackbar = true;
+        }
+      );
+      // axios
+      //   .post("http://localhost:3000/api/login", form).then((response) => {
+      //     this.result = response.data;
+      //     this.$store.state.user = this.result.nik;
+      //     this.$store.state.isLogin = true;
+      //     this.$store.state.jwt_token = this.result.token;
+      //     this.$router.push({ name: "Profile" });
 
           // if (this.result.token) {
           //   axios
@@ -110,13 +129,13 @@ export default {
           //       }
           //     });
           // }
-        })
-        .catch((e) => {
-          if (e.response && e.response.status !== 200) {
-            this.error_message = e.response.data.error;
-            this.snackbar = true;
-          }
-        });
+        // })
+        // .catch((e) => {
+        //   if (e.response && e.response.status !== 200) {
+        //     this.error_message = e.response.data.error;
+        //     this.snackbar = true;
+        //   }
+        // });
     },
   },
 };

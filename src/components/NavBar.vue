@@ -1,31 +1,31 @@
 <template>
-    <section>
-        <v-navigation-drawer v-model="drawer" app>
-        <v-list-item>
-            <v-list-item-content>
-            <v-list-item-title class="title">
-                Personal History Card
-            </v-list-item-title>
-            <v-list-item-subtitle>
-                subtext
-            </v-list-item-subtitle>
-            </v-list-item-content>
+  <section>
+    <v-navigation-drawer v-model="drawer" app>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="title">
+            Personal History Card
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            subtext
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+      <v-divider></v-divider>
+      <v-list dense nav>
+        <v-list-item to="/Home">
+          <v-list-item-action>
+            <v-icon>mdi-home</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Home</v-list-item-title>
+          </v-list-item-content>
         </v-list-item>
-        <v-divider></v-divider>
-        <v-list dense nav>
-            <v-list-item to="/Home">
-                <v-list-item-action>
-                    <v-icon>mdi-home</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                    <v-list-item-title>Home</v-list-item-title>
-                </v-list-item-content>
-            </v-list-item>
-            <v-list-item  to="/About">
-                <v-list-item-action>
-                    <v-icon>mdi-help-circle</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
+        <v-list-item  to="/About">
+          <v-list-item-action>
+            <v-icon>mdi-help-circle</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
                     <v-list-item-title>About</v-list-item-title>
                 </v-list-item-content>
             </v-list-item>
@@ -53,7 +53,7 @@
  
         <v-app-bar app color="blue darken-4" dark>
             <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-            <v-toolbar-title>Application</v-toolbar-title>
+            <v-toolbar-title>Personal History Card</v-toolbar-title>
             <div class="flex-grow-1"></div>
  
             <v-btn icon>
@@ -89,18 +89,29 @@
     </section>
 </template>
 <script>
-export default {
-    props: {
-      source: String,
-    },
-    data: () => ({
-      drawer: null,
-    }),
-    methods: {
-        signoutButtonPressed() {
-            this.$store.dispatch('clearState');
-            this.$router.push({ name: "Login" });
+  import { authenticationService } from '@/_services';
+  import { Role } from '@/_helpers';
+  export default {
+      props: {
+        source: String,
+      },
+      data: () => ({
+        drawer: null,
+        currentUser: null,
+      }),
+      methods: {
+        signoutButtonPressed() { 
+          authenticationService.logout();
+          this.$router.push("/login");
         }
-    }
-};
+      },
+      created () {
+        authenticationService.currentUser.subscribe(x => this.currentUser = x);
+      },
+      computed: {
+        isAdmin () {
+            return this.currentUser && this.currentUser.role === Role.Admin;
+        }
+      },
+  };
 </script>

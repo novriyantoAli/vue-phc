@@ -28,9 +28,7 @@ export default {
         errors:null
     }),
     mounted: function () {
-      console.log(this.$store.state);
-
-      this.user=this.$store.state.user;
+        this.user=this.$store.state.user;
     }
 }
 </script>

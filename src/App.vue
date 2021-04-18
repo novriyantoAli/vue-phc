@@ -1,6 +1,6 @@
 <template>
   <v-app teal>
-    <NavBar v-show="getStatusLogin" />
+    <NavBar v-show="currentUser" />
     <v-content>
       <router-view />
     </v-content>
@@ -12,21 +12,20 @@
  
 <script>
 import NavBar from "./components/NavBar";
+import { authenticationService } from '@/_services';
 
 export default {
   name: "App",
   components: {
     NavBar,
   },
-  data: () => ({
-    //
-  }),
-  computed: {
-    getStatusLogin: function () {
-      console.log(this.$store);
-
-      return this.$store.state.isLogin;
-    },
+  data () {
+    return {
+      currentUser: null
+    };
+  },
+  created () {
+    authenticationService.currentUser.subscribe(x => this.currentUser = x);
   },
 };
 </script>

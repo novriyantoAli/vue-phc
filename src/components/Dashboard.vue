@@ -30,5 +30,26 @@ export default {
     mounted: function () {
         this.user=this.$store.state.user;
     }
+    created: function () {
+    authenticationService.currentUser.subscribe(x => this.currentUser = x);
+  },
+  mounted: function () {
+    this.loading = true
+
+    pegawaiService.getByNIK(this.currentUser.nik).then(
+      pegawai => {
+        console.log(pegawai);
+        this.pegawaiResult = pegawai;
+        this.loading = false;
+      }, 
+      error => {
+        console.log(error);
+
+        this.loading = false;
+        this.errors = error;
+        this.snackbar = true;
+      }
+    );
+  },
 }
 </script>

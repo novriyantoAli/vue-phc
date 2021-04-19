@@ -1,8 +1,8 @@
 import { handleResponse, requestOptions } from '@/_helpers';
 
-export const userService = {
+export const pegawaiService = {
     getAll,
-    getById
+    getByNIK
 };
 
 function getAll() {
@@ -10,7 +10,7 @@ function getAll() {
         .then(handleResponse);
 }
 
-function getById(id) {
-    return fetch(`http://localhost:3000/api/pegawai/${id}`, requestOptions.get())
+function getByNIK(nik) {
+    return fetch(`http://localhost:3000/api/pegawai?nik=${nik}`, requestOptions.get())
         .then(handleResponse); 
 }

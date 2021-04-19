@@ -1,3 +1,4 @@
+/* eslint-disable */
 import Vue from 'vue';
 import Router from 'vue-router';
 
@@ -47,7 +48,7 @@ router.beforeEach((to, from, next) => {
         }
 
         // check if route is restricted by role
-        if (authorize.length && !authorize.includes(currentUser.role)) {
+        if (authorize.length && !authorize.includes(currentUser.level)) {
             // role not authorised so redirect to home page
             return next({ path: '/' });
         }

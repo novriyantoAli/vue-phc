@@ -4,21 +4,29 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title class="title">
-            Personal History Card
+            {{getUserActive}}
           </v-list-item-title>
           <v-list-item-subtitle>
-            subtext
+            {{getRoleActive}}
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
       <v-divider></v-divider>
       <v-list dense nav>
-        <v-list-item to="/Home">
+        <v-list-item to="/home">
           <v-list-item-action>
             <v-icon>mdi-home</v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>Home</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item to="/pegawai">
+          <v-list-item-action>
+            <v-icon>mdi-account-group</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Pegawai</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item  to="/About">
@@ -110,7 +118,21 @@
       },
       computed: {
         isAdmin () {
-            return this.currentUser && this.currentUser.role === Role.Admin;
+            return this.currentUser && this.currentUser.level === Role.Admin;
+        }, 
+        getUserActive() {
+          if (this.currentUser) {
+            return this.currentUser.nik;
+          }
+
+          return "Unknown"
+        },
+        getRoleActive() {
+          if (this.currentUser) {
+            return this.currentUser.level;
+          }
+
+          return "Unknown"
         }
       },
   };

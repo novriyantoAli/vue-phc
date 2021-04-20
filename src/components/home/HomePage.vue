@@ -4,7 +4,7 @@
       <v-row>
         <v-col>
           <v-alert v-if="errors" type="error" class="mt-4">{{errors}}</v-alert>
-          <v-card color="#385F73" dark v-if="pegawaiResult == false">
+          <v-card color="#385F73" dark v-if="pegawaiResult">
             <v-card-text class="white--text">
               <div class="headline mb-2">{{currentUser.nik}}</div>
               Sepertinya profil anda belum lengkap, segera lengkapi data profile untuk keperluan kepegawaian
@@ -42,7 +42,6 @@ export default {
 				if (Array.isArray(pegawai) && pegawai.length === 1 ) {
 					this.pegawaiResult = true
 				}
-				this.loading = false
 			},
 			error => {
 				this.errors = error

@@ -1,35 +1,93 @@
 <template>
-  <section>
-    <v-container class="pa-2" fluid>
-      <v-row>
-        <v-col>
-          <v-alert v-if="errors" type="error" class="mt-4">{{errors}}</v-alert>
-          <v-card color="#385F73" dark v-if="user">
-            <v-card-text class="white--text">
-              <div class="headline mb-2">{{nik}}</div>
-              Sepertinya profil anda belum lengkap, segera lengkapi data profile untuk keperluan kepegawaian
-            </v-card-text>
- 
-            <v-card-actions>
-              <v-btn text>Lengkapi Sekarang!</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
-  </section>
+  <v-container>
+      <div>
+    <v-breadcrumbs :items="items">
+      <template v-slot:divider>
+        <v-icon>mdi-forward</v-icon>
+      </template>
+    </v-breadcrumbs>
+
+    <v-breadcrumbs :items="items">
+      <template v-slot:divider>
+        <v-icon>mdi-chevron-right</v-icon>
+      </template>
+    </v-breadcrumbs>
+  </div>
+    <div v-if="!submitted">
+      <v-card class="mx-auto">
+        <v-card-text>
+        <v-form ref="form" lazy-validation>
+        <v-text-field
+          v-model="tutorial.title"
+          :rules="[(v) => !!v || 'Title is required']"
+          label="Title"
+          required
+        ></v-text-field>
+
+        <v-text-field
+          v-model="tutorial.description"
+          :rules="[(v) => !!v || 'Description is required']"
+          label="Description"
+          required
+        ></v-text-field>
+      </v-form>  
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" class="mt-3" @click="saveTutorial">Submit</v-btn>
+          
+        </v-card-actions>
+      </v-card>
+    </div>
+    <div v-else>
+      <v-card class="mx-auto">
+        <v-card-title>
+          Submitted successfully!
+        </v-card-title>
+
+        <v-card-subtitle>
+          Click the button to add new Tutorial.
+        </v-card-subtitle>
+
+        <v-card-actions>
+          <v-btn color="success" @click="newTutorial">Add</v-btn>
+        </v-card-actions>
+      </v-card>
+    </div>
+  </v-container>
 </template>
- 
+
 <script>
-import { pegawaiService } from '@/_services';
-export default {
-    data: () => ({
-        user:null,
-        result:null,
-        errors:null
-    }),
-    created: function () {
-      authenticationService.currentUser.subscribe(x => this.currentUser = x);
+  export default {
+    name: "add-tutorial",
+    data() {
+      return {
+        tutorial: {
+          id: null,
+          title: "",
+          description: "",
+          published: false,
+        },
+        submitted: false,
+      };
     },
-}
+    methods: {
+      saveTutorial() {
+        // var data = {
+        //   title: this.tutorial.title,
+        //   description: this.tutorial.description,
+        // };
+      },
+
+      newTutorial() {
+        this.submitted = false;
+        this.tutorial = {};
+      },
+    },
+  };
 </script>
+
+<style>
+  .submit-form {
+    max-width: 300px;
+  }
+</style>

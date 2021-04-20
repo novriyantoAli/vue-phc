@@ -26,6 +26,12 @@ export const router = new Router({
             meta: { authorize: [Role.Admin] } 
         },
         { 
+            path: '/pegawai/create', 
+            name: 'pegawai-create',
+            component: () => import("../components/pegawai/CreatePegawaiPage"),
+            meta: { authorize: [Role.Admin] } 
+        },
+        { 
             path: '/login', 
             name: 'login',
             component: LoginPage 

@@ -29,36 +29,40 @@
                   <v-row>
                     <v-col cols="12" sm="6">
                       <v-text-field
+                        v-model="nik"
+                        :rules="nikRules"
                         label="Nomor Induk Karyawan"
                         type="number"
+                        required
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-text-field
-                        label="NO. KTP"
+                        v-model="noktp"
+                        :rules="noKTPRules"
+                        label="No. KTP"
                         type="number"
+                        required
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-text-field
-                        v-model="form.first"
-                        :rules="rules.name"
-                        color="purple darken-2"
+                        v-model="namalengkap"
+                        :rules="textNoNullRules"
                         label="Nama Lengkap"
                         required
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-text-field
-                        v-model="form.last"
-                        :rules="rules.name"
-                        color="blue darken-2"
+                        v-model="namaPanggilan"
+                        :rules="textNoNullRules"
                         label="Nama Panggilan"
                         required
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12">
-                      <v-textarea v-model="form.bio" color="teal">
+                      <v-textarea v-model="alamat" color="teal" :rules="textNoNullRules" >
                         <template v-slot:label>
                           <div>
                             Alamat <small>(diperinci)</small>
@@ -67,14 +71,20 @@
                       </v-textarea>
                     </v-col>
                     <v-col cols="12" sm="6">
-                      <v-select 
-                        v-model="form.favoriteAnimal"
-                        :items="animals"
-                        :rules="rules.animal"
-                        color="pink"
+                      <v-autocomplete
+                        v-model="provinsis"
+                        :items="items"
+                        :loading="isLoading"
+                        :search-input.sync="search"
+                        hide-no-data
+                        hide-selected
+                        item-text="Description"
+                        item-value="API"
                         label="Provinsi"
-                        required
-                      ></v-select>
+                        placeholder="Nama Provinsi"
+                        prepend-icon="mdi-database-search"
+                        return-object>    
+                      </v-autocomplete>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-select 
@@ -242,684 +252,1560 @@
                   </v-card-text>
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn text color="purple" @click="terms = false">
-                      Ok
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-              <v-dialog v-model="conditions" width="70%">
-                <v-card>
-                  <v-card-title class="title">
-                    Conditions
-                  </v-card-title>
-                  <v-card-text v-for="n in 5" :key="n" >
-                    {{ content }}
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn 
-                      text
-                      color="purple"
-                      @click="conditions = false"
-                    >Ok</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </v-card>
+                  <v-btn text color="purple" @click="terms = false">
+                    Ok
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+            <v-dialog v-model="conditions" width="70%">
+              <v-card>
+                <v-card-title class="title">
+                  Conditions
+                </v-card-title>
+                <v-card-text v-for="n in 5" :key="n" >
+                  {{ content }}
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn 
+                    text
+                    color="purple"
+                    @click="conditions = false"
+                  >Ok</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </v-card>
           </template>
         </v-expansion-panel-content>
       </v-expansion-panel>
 
-    <v-expansion-panel>
-      <v-expansion-panel-header v-slot="{ open }">
-        <v-row no-gutters>
-          <v-col cols="4">
-            DATA KELUARGA
-          </v-col>
-          <v-col cols="8" class="text--secondary">
-            <v-fade-transition leave-absolute>
-              <span v-if="open" key="0">
-                Silahkan Masukkan Data Keluarga
-              </span>
-              <span v-else key="1">
-                {{ trip.location }}
-              </span>
-            </v-fade-transition>
-          </v-col>
-        </v-row>
-      </v-expansion-panel-header>
-      <v-expansion-panel-content>
-        <template>
-          <v-data-table
-            :headers="headers"
-            :items="desserts"
-            sort-by="calories"
-            class="elevation-1">
-            <template v-slot:top>
-              <v-toolbar flat>
-                <v-toolbar-title>KELUARGA</v-toolbar-title>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-spacer></v-spacer>
-                <v-dialog v-model="dialog" max-width="700px">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      color="primary"
-                      dark
-                      class="mb-2"
-                      v-bind="attrs"
-                      v-on="on">
-                      Buat Baru
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title>
-                      <span class="headline">{{ formTitle }}</span>
-                    </v-card-title>
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              DATA KELUARGA
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Keluarga
+                </span>
+                <span v-else key="1">
+                  {{ trip.location }}
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headers"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>KELUARGA</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
 
-                    <v-card-text>
-                      <v-container>
-                        <v-row>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Nama Keluarga">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-radio-group v-model="row" row>
-                              <v-radio label="LAKI-LAKI" value="Pria"></v-radio>
-                              <v-radio label="PEREMPUAN" value="Wanita"></v-radio>
-                            </v-radio-group>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <template>
-                              <v-menu
-                                ref="menu"
-                                v-model="menu"
-                                :close-on-content-click="false"
-                                transition="scale-transition"
-                                offset-y
-                                min-width="auto">
-                                <template v-slot:activator="{ on, attrs }">
-                                  <v-text-field
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Nama Keluarga">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-radio-group v-model="row" row>
+                                <v-radio label="LAKI-LAKI" value="Pria"></v-radio>
+                                <v-radio label="PEREMPUAN" value="Wanita"></v-radio>
+                              </v-radio-group>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <template>
+                                <v-menu
+                                  ref="menu"
+                                  v-model="menu"
+                                  :close-on-content-click="false"
+                                  transition="scale-transition"
+                                  offset-y
+                                  min-width="auto">
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-text-field
+                                      v-model="date"
+                                      label="Tanggal Lahir"
+                                      prepend-icon="mdi-calendar"
+                                      readonly
+                                      v-bind="attrs"
+                                      v-on="on">
+                                    </v-text-field>
+                                  </template>
+                                  <v-date-picker
+                                    ref="picker"
                                     v-model="date"
-                                    label="Tanggal Lahir"
-                                    prepend-icon="mdi-calendar"
-                                    readonly
-                                    v-bind="attrs"
-                                    v-on="on">
-                                  </v-text-field>
-                                </template>
-                                <v-date-picker
-                                  ref="picker"
-                                  v-model="date"
-                                  :max="new Date().toISOString().substr(0, 10)"
-                                  min="1950-01-01"
-                                  @change="save">
-                                </v-date-picker>
-                              </v-menu>
-                            </template>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-select 
-                              v-model="form.favoriteAnimal"
-                              :items="animals"
-                              :rules="rules.animal"
-                              color="pink"
-                              label="Hubungan"
-                              required></v-select>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field
-                              v-model="editedItem.protein"
-                              label="Pendidikan">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field
-                              v-model="editedItem.protein"
-                              label="Pekerjaan">
-                            </v-text-field>
-                          </v-col>
-                        </v-row>
-                      </v-container>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="close">
-                        Cancel
-                      </v-btn>
-                      <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="saveItem">
-                        Save
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-                <v-dialog v-model="dialogDelete" max-width="500px">
-                  <v-card>
-                    <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
-                    </v-card-title>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                      <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
-                      <v-spacer></v-spacer>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </v-toolbar>
-            </template>
-            <template v-slot:item.actions="{ item }">
-              <v-icon small class="mr-2" @click="editItem(item)">
-                mdi-pencil
-              </v-icon>
-              <v-icon small @click="deleteItem(item)">
-                mdi-delete
-              </v-icon>
-            </template>
-            <template v-slot:no-data>
-              <v-btn color="primary" @click="initialize">
-                Reset
-              </v-btn>
-            </template>
-          </v-data-table>
-        </template>
-      </v-expansion-panel-content>
-    </v-expansion-panel>
+                                    :max="new Date().toISOString().substr(0, 10)"
+                                    min="1950-01-01"
+                                    @change="save">
+                                  </v-date-picker>
+                                </v-menu>
+                              </template>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-select 
+                                v-model="form.favoriteAnimal"
+                                :items="animals"
+                                :rules="rules.animal"
+                                color="pink"
+                                label="Hubungan"
+                                required></v-select>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field
+                                v-model="editedItem.protein"
+                                label="Pendidikan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field
+                                v-model="editedItem.protein"
+                                label="Pekerjaan">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
 
-    <v-expansion-panel>
-      <v-expansion-panel-header v-slot="{ open }">
-        <v-row no-gutters>
-          <v-col cols="4">
-            KONTAK DARURAT
-          </v-col>
-          <v-col cols="8" class="text--secondary">
-            <v-fade-transition leave-absolute>
-              <span v-if="open">Silahkan Masukkan Data Kontak Darurat</span>
-              <v-row v-else no-gutters style="width: 100%">
-                <v-col cols="6">
-                  ORANG KE I : {{ trip.start || 'Belum di isi' }}
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              KONTAK DARURAT
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open">Silahkan Masukkan Data Kontak Darurat</span>
+                <v-row v-else no-gutters style="width: 100%">
+                  <v-col cols="6">
+                    ORANG KE I : {{ trip.start || 'Belum di isi' }}
+                  </v-col>
+                  <v-col cols="6">
+                    ORANG KE II : {{ trip.end || 'Belum di isi' }}
+                  </v-col>
+                </v-row>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersKontakDarurat"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>DARURAT</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Nama Lengkap">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Hubungan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Alamat Rumah">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="No. Telp Rumah">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="No. Telp Kantor">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Keterangan">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              RIWAYAT PENDIDIKAN
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Riwayat Pendidikan
+                </span>
+                <span v-else key="1">
+                  Terdapat {{ trip.length }} data
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersRiwayatPendidikan"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>PENDIDIKAN</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tingkat Pendidikan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Nama Sekolah">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tempat">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Jurusan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tahun Lulus">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              LOKAKARYA
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Seminar/Kursus
+                </span>
+                <span v-else key="1">
+                  Terdapat {{ trip.length }} data
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersLokakarya"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>LOKAKARYA DILUAR HGI</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Nama Kursus/Seminar">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Penyelenggaraan/Lokasi">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Mulai">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Selesai">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Lama(hari)">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              PENGALAMAN KERJA
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Pengalaman Kerja
+                </span>
+                <span v-else key="1">
+                  Terdapat {{ trip.length }} data
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersPengalamanKerja"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>PENGALAMAN KERJA DILUAR PERUSAHAAN</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Dari Tahun">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Sampai Tahun">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Perusahaan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Jabatan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Alasan Berhenti">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
+      <v-expansion-panel>
+          <v-expansion-panel-header>
+            <template v-slot:default="{ open }">
+              <v-row no-gutters>
+                <v-col cols="4">
+                  DATA KEPEGAWAIAN
                 </v-col>
-                <v-col cols="6">
-                  ORANG KE II : {{ trip.end || 'Belum di isi' }}
+                <v-col cols="8" class="text--secondary">
+                  <v-fade-transition leave-absolute>
+                    <span v-if="open" key="0">
+                      RAHASIA
+                    </span>
+                    <span v-else key="1">
+                      {{ trip.name }}
+                    </span>
+                  </v-fade-transition>
                 </v-col>
               </v-row>
-            </v-fade-transition>
-          </v-col>
-        </v-row>
-      </v-expansion-panel-header>
-      <v-expansion-panel-content>
-        <template>
-          <v-data-table
-            :headers="headersKontakDarurat"
-            :items="desserts"
-            sort-by="calories"
-            class="elevation-1">
-            <template v-slot:top>
-              <v-toolbar flat>
-                <v-toolbar-title>DARURAT</v-toolbar-title>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-spacer></v-spacer>
-                <v-dialog v-model="dialog" max-width="700px">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      color="primary"
-                      dark
-                      class="mb-2"
-                      v-bind="attrs"
-                      v-on="on">
-                      Buat Baru
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title>
-                      <span class="headline">{{ formTitle }}</span>
-                    </v-card-title>
+            </template>
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <template>
+              <v-card flat>
+                <v-form ref="form" @submit.prevent="submit">
+                  <v-container fluid>
+                    <v-row>
+                      <v-col cols="12" sm="6">
+                        <template>
+                          <v-menu
+                            ref="menu"
+                            v-model="menu"
+                            :close-on-content-click="false"
+                            transition="scale-transition"
+                            offset-y
+                            min-width="auto">
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-text-field
+                                v-model="date"
+                                label="Tanggal Mulai Bekerja"
+                                prepend-icon="mdi-calendar"
+                                readonly
+                                v-bind="attrs"
+                                v-on="on"
+                              ></v-text-field>
+                            </template>
+                            <v-date-picker
+                              ref="picker"
+                              v-model="date"
+                              :max="new Date().toISOString().substr(0, 10)"
+                              min="1950-01-01"
+                              @change="save"
+                            ></v-date-picker>
+                          </v-menu>
+                        </template>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          label="Level"
+                          type="number"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          label="Divisi"
+                          type="number"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          v-model="form.first"
+                          :rules="rules.name"
+                          label="Seksi"
+                          required
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          v-model="form.last"
+                          :rules="rules.name"
+                          label="Bagian"
+                          required
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-select 
+                          v-model="form.favoriteAnimal"
+                          :items="animals"
+                          :rules="rules.animal"
+                          color="pink"
+                          label="Status Karyawan"
+                          required
+                        ></v-select>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <template>
+                          <v-menu
+                            ref="menu"
+                            v-model="menu"
+                            :close-on-content-click="false"
+                            transition="scale-transition"
+                            offset-y
+                            min-width="auto">
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-text-field
+                                v-model="date"
+                                label="Tanggal Pengangkatan"
+                                prepend-icon="mdi-calendar"
+                                readonly
+                                v-bind="attrs"
+                                v-on="on"
+                              ></v-text-field>
+                            </template>
+                            <v-date-picker
+                              ref="picker"
+                              v-model="date"
+                              :max="new Date().toISOString().substr(0, 10)"
+                              min="1950-01-01"
+                              @change="save"
+                            ></v-date-picker>
+                          </v-menu>
+                        </template>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-select 
+                          v-model="form.favoriteAnimal"
+                          :items="animals"
+                          :rules="rules.animal"
+                          label="Nomor Rekening"
+                          required
+                        ></v-select>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-select 
+                          v-model="form.favoriteAnimal"
+                          :items="animals"
+                          :rules="rules.animal"
+                          label="No. BPJS Kesehatan"
+                          required
+                        ></v-select>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-select 
+                          v-model="form.favoriteAnimal"
+                          :items="animals"
+                          :rules="rules.animal"
+                          label="No. BPJS Ketenagakerjaan"
+                          required
+                        ></v-select>
+                      </v-col>
+                      
+                    </v-row>
+                  </v-container>
+                </v-form>
+              </v-card>
+            </template>
+          </v-expansion-panel-content>
+      </v-expansion-panel>
+      
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              RIWAYAT PEKERJAAN/JABATAN
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Riwayat Pekerjaan/Jabatan
+                </span>
+                <span v-else key="1">
+                  Terdapat {{ trip.length }} data
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersRiwayatPekerjaan"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>RIWAYAT PEKERJAAN/JABATAN DIDALAM PERUSAHAAN</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
 
-                    <v-card-text>
-                      <v-container>
-                        <v-row>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Nama Lengkap">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Hubungan">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Alamat Rumah">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="No. Telp Rumah">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="No. Telp Kantor">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Keterangan">
-                            </v-text-field>
-                          </v-col>
-                        </v-row>
-                      </v-container>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="close">
-                        Cancel
-                      </v-btn>
-                      <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="saveItem">
-                        Save
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-                <v-dialog v-model="dialogDelete" max-width="500px">
-                  <v-card>
-                    <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
-                    </v-card-title>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                      <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
-                      <v-spacer></v-spacer>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </v-toolbar>
-            </template>
-            <template v-slot:item.actions="{ item }">
-              <v-icon small class="mr-2" @click="editItem(item)">
-                mdi-pencil
-              </v-icon>
-              <v-icon small @click="deleteItem(item)">
-                mdi-delete
-              </v-icon>
-            </template>
-            <template v-slot:no-data>
-              <v-btn color="primary" @click="initialize">
-                Reset
-              </v-btn>
-            </template>
-          </v-data-table>
-        </template>
-      </v-expansion-panel-content>
-    </v-expansion-panel>
-    <v-expansion-panel>
-      <v-expansion-panel-header v-slot="{ open }">
-        <v-row no-gutters>
-          <v-col cols="4">
-            RIWAYAT PENDIDIKAN
-          </v-col>
-          <v-col cols="8" class="text--secondary">
-            <v-fade-transition leave-absolute>
-              <span v-if="open" key="0">
-                Silahkan Masukkan Data Riwayat Pendidikan
-              </span>
-              <span v-else key="1">
-                Terdapat {{ trip.length }} data
-              </span>
-            </v-fade-transition>
-          </v-col>
-        </v-row>
-      </v-expansion-panel-header>
-      <v-expansion-panel-content>
-        <template>
-          <v-data-table
-            :headers="headersRiwayatPendidikan"
-            :items="desserts"
-            sort-by="calories"
-            class="elevation-1">
-            <template v-slot:top>
-              <v-toolbar flat>
-                <v-toolbar-title>PENDIDIKAN</v-toolbar-title>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-spacer></v-spacer>
-                <v-dialog v-model="dialog" max-width="700px">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      color="primary"
-                      dark
-                      class="mb-2"
-                      v-bind="attrs"
-                      v-on="on">
-                      Buat Baru
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title>
-                      <span class="headline">{{ formTitle }}</span>
-                    </v-card-title>
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tipe">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Terhitung Mulai">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Nomor SK">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Jabatan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Departemen">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Keterangan">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
 
-                    <v-card-text>
-                      <v-container>
-                        <v-row>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Tingkat Pendidikan">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Nama Sekolah">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Tempat">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Jurusan">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Tahun Lulus">
-                            </v-text-field>
-                          </v-col>
-                        </v-row>
-                      </v-container>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              PENGHARGAAN
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Riwayat Penghargaan
+                </span>
+                <span v-else key="1">
+                  Terdapat {{ trip.length }} data
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersRiwayatPenghargaan"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>PEMBERIAN PENGHARGAAN DARI PERUSAHAAN</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
                       <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="close">
-                        Cancel
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
                       </v-btn>
-                      <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="saveItem">
-                        Save
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-                <v-dialog v-model="dialogDelete" max-width="500px">
-                  <v-card>
-                    <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
-                    </v-card-title>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
-                      <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
-                      <v-spacer></v-spacer>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </v-toolbar>
-            </template>
-            <template v-slot:item.actions="{ item }">
-              <v-icon small class="mr-2" @click="editItem(item)">
-                mdi-pencil
-              </v-icon>
-              <v-icon small @click="deleteItem(item)">
-                mdi-delete
-              </v-icon>
-            </template>
-            <template v-slot:no-data>
-              <v-btn color="primary" @click="initialize">
-                Reset
-              </v-btn>
-            </template>
-          </v-data-table>
-        </template>
-      </v-expansion-panel-content>
-    </v-expansion-panel>
-    <v-expansion-panel>
-      <v-expansion-panel-header v-slot="{ open }">
-        <v-row no-gutters>
-          <v-col cols="4">
-            LOKAKARYA
-          </v-col>
-          <v-col cols="8" class="text--secondary">
-            <v-fade-transition leave-absolute>
-              <span v-if="open" key="0">
-                Silahkan Masukkan Data Seminar/Kursus
-              </span>
-              <span v-else key="1">
-                Terdapat {{ trip.length }} data
-              </span>
-            </v-fade-transition>
-          </v-col>
-        </v-row>
-      </v-expansion-panel-header>
-      <v-expansion-panel-content>
-        <template>
-          <v-data-table
-            :headers="headersLokakarya"
-            :items="desserts"
-            sort-by="calories"
-            class="elevation-1">
-            <template v-slot:top>
-              <v-toolbar flat>
-                <v-toolbar-title>LOKAKARYA DILUAR HGI</v-toolbar-title>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-spacer></v-spacer>
-                <v-dialog v-model="dialog" max-width="700px">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      color="primary"
-                      dark
-                      class="mb-2"
-                      v-bind="attrs"
-                      v-on="on">
-                      Buat Baru
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title>
-                      <span class="headline">{{ formTitle }}</span>
-                    </v-card-title>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
 
-                    <v-card-text>
-                      <v-container>
-                        <v-row>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Nama Kursus/Seminar">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Penyelenggaraan/Lokasi">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Mulai">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Selesai">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Lama(hari)">
-                            </v-text-field>
-                          </v-col>
-                        </v-row>
-                      </v-container>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="close">
-                        Cancel
-                      </v-btn>
-                      <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="saveItem">
-                        Save
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-                <v-dialog v-model="dialogDelete" max-width="500px">
-                  <v-card>
-                    <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
-                    </v-card-title>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
-                      <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
-                      <v-spacer></v-spacer>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </v-toolbar>
-            </template>
-            <template v-slot:item.actions="{ item }">
-              <v-icon small class="mr-2" @click="editItem(item)">
-                mdi-pencil
-              </v-icon>
-              <v-icon small @click="deleteItem(item)">
-                mdi-delete
-              </v-icon>
-            </template>
-            <template v-slot:no-data>
-              <v-btn color="primary" @click="initialize">
-                Reset
-              </v-btn>
-            </template>
-          </v-data-table>
-        </template>
-      </v-expansion-panel-content>
-    </v-expansion-panel>
-    <v-expansion-panel>
-      <v-expansion-panel-header v-slot="{ open }">
-        <v-row no-gutters>
-          <v-col cols="4">
-            PNEGALAMAN KERJA
-          </v-col>
-          <v-col cols="8" class="text--secondary">
-            <v-fade-transition leave-absolute>
-              <span v-if="open" key="0">
-                Silahkan Masukkan Data Pengalaman Kerja
-              </span>
-              <span v-else key="1">
-                Terdapat {{ trip.length }} data
-              </span>
-            </v-fade-transition>
-          </v-col>
-        </v-row>
-      </v-expansion-panel-header>
-      <v-expansion-panel-content>
-        <template>
-          <v-data-table
-            :headers="headersPengalamanKerja"
-            :items="desserts"
-            sort-by="calories"
-            class="elevation-1">
-            <template v-slot:top>
-              <v-toolbar flat>
-                <v-toolbar-title>PENGALAMAN KERJA DILUAR PERUSAHAAN</v-toolbar-title>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-spacer></v-spacer>
-                <v-dialog v-model="dialog" max-width="700px">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      color="primary"
-                      dark
-                      class="mb-2"
-                      v-bind="attrs"
-                      v-on="on">
-                      Buat Baru
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title>
-                      <span class="headline">{{ formTitle }}</span>
-                    </v-card-title>
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Jenis Penghargaan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tanggal Diterima">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Keterangan">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
 
-                    <v-card-text>
-                      <v-container>
-                        <v-row>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Dari Tahun">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Sampai Tahun">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Perusahaan">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Jabatan">
-                            </v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field v-model="editedItem.name" label="Alasan Berhenti">
-                            </v-text-field>
-                          </v-col>
-                        </v-row>
-                      </v-container>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              TEGURAN LISAN
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Teguran Lisan
+                </span>
+                <span v-else key="1">
+                  Terdapat {{ trip.length }} data
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersTeguranLisan"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>TEGURAN LISAN</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
                       <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="close">
-                        Cancel
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
                       </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Jenis Pelanggaran">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tanggal Dikeluarkan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Kesalahan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Keterangan">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              SURAT PERINGATAN
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Surat Peringatan
+                </span>
+                <span v-else key="1">
+                  Terdapat {{ trip.length }} data
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersSuratPeringatan"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>PEMBERIAN SURAT PERINGATAN</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
                       <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="saveItem">
-                        Save
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
                       </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-                <v-dialog v-model="dialogDelete" max-width="500px">
-                  <v-card>
-                    <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
-                    </v-card-title>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
-                      <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
-                      <v-spacer></v-spacer>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </v-toolbar>
-            </template>
-            <template v-slot:item.actions="{ item }">
-              <v-icon small class="mr-2" @click="editItem(item)">
-                mdi-pencil
-              </v-icon>
-              <v-icon small @click="deleteItem(item)">
-                mdi-delete
-              </v-icon>
-            </template>
-            <template v-slot:no-data>
-              <v-btn color="primary" @click="initialize">
-                Reset
-              </v-btn>
-            </template>
-          </v-data-table>
-        </template>
-      </v-expansion-panel-content>
-    </v-expansion-panel>
-  </v-expansion-panels>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Jenis Surat Peringatan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tanggal Dikeluarkan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Masa Berlaku">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Kesalahan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Keterangan">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              PENILAIAN KARYAWAN
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Penilaian Karyawan
+                </span>
+                <span v-else key="1">
+                  Terdapat {{ trip.length }} data
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersPenilaiian"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>PENILAIAN KARYAWAN</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tanggal">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Nilai">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Keterangan">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
+      <v-expansion-panel>
+        <v-expansion-panel-header v-slot="{ open }">
+          <v-row no-gutters>
+            <v-col cols="4">
+              ASET DIPINJAMKAN
+            </v-col>
+            <v-col cols="8" class="text--secondary">
+              <v-fade-transition leave-absolute>
+                <span v-if="open" key="0">
+                  Silahkan Masukkan Data Aset yang Dipinjamkan
+                </span>
+                <span v-else key="1">
+                  Terdapat {{ trip.length }} data
+                </span>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <template>
+            <v-data-table
+              :headers="headersAsetPerusahaan"
+              :items="desserts"
+              sort-by="calories"
+              class="elevation-1">
+              <template v-slot:top>
+                <v-toolbar flat>
+                  <v-toolbar-title>ASET PERUSAHAAN YANG DIPINJAMKAN</v-toolbar-title>
+                  <v-divider class="mx-4" inset vertical></v-divider>
+                  <v-spacer></v-spacer>
+                  <v-dialog v-model="dialog" max-width="700px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        class="mb-2"
+                        v-bind="attrs"
+                        v-on="on">
+                        Buat Baru
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">{{ formTitle }}</span>
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-container>
+                          <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Jenis">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tanggal Diberikan">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Nomor">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Jumlah">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Tanggal Berakhir">
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6" md="4">
+                              <v-text-field v-model="editedItem.name" label="Keterangan">
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="close">
+                          Cancel
+                        </v-btn>
+                        <v-btn
+                          color="blue darken-1"
+                          text
+                          @click="saveItem">
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-dialog v-model="dialogDelete" max-width="500px">
+                    <v-card>
+                      <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="closeDelete">Batal</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">Hapus</v-btn>
+                        <v-spacer></v-spacer>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-toolbar>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon small class="mr-2" @click="editItem(item)">
+                  mdi-pencil
+                </v-icon>
+                <v-icon small @click="deleteItem(item)">
+                  mdi-delete
+                </v-icon>
+              </template>
+              <template v-slot:no-data>
+                <v-btn color="primary" @click="initialize">
+                  Reset
+                </v-btn>
+              </template>
+            </v-data-table>
+          </template>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
+    </v-expansion-panels>
   </v-container>
 </template>
 
@@ -935,6 +1821,36 @@
         terms: false,
       })
       return {
+        // FOR AUTO COMPLETE
+        descriptionLimit: 60,
+        entries: [],
+        isLoading: false,
+        provinsis: null,
+        search: null,
+        // END AUTO COMPLETE
+
+        nik: "",
+        nikRules: [
+          (v) => v.length > 4 || "Isian angka yang anda masukkan tidak valid",
+          (v) => Number.isInteger(Number(v)) || "Isian ini harus berupa angka",
+          (v) => v > 0 || "Isian angka yang anda masukkan tidak valid ",
+        ],
+
+        noktp: "",
+        noKTPRules: [
+          (v) => v.length > 4 || "Isian angka yang anda masukkan tidak valid",
+          (v) => Number.isInteger(Number(v)) || "Isian ini harus berupa angka",
+          (v) => v > 0 || "Isian angka yang anda masukkan tidak valid ",
+        ],
+
+        namalengkap: "",
+        namaPanggilan: "",
+        alamat: "",
+        textNoNullRules: [
+          (v) => !!v || "Nama Lengkap tidak valid",
+          (v) =>(v && v.length > 0) || "Nama Lengkap tidak bisa kosong",
+        ],
+
         row: null,
         image: undefined,
         imageUrl: "",
@@ -1030,6 +1946,80 @@
         { text: 'Alasan Berhenti', value: 'protein' },
         { text: 'Actions', value: 'actions', sortable: false },
         ],
+        headersRiwayatPekerjaan: [
+        {
+          text: 'Tipe',
+          align: 'start',
+          sortable: false,
+          value: 'name',
+        },
+        { text: 'Terhitung Mulai', value: 'calories' },
+        { text: 'Nomor SK', value: 'fat' },
+        { text: 'Jabatan', value: 'carbs' },
+        { text: 'Departemen', value: 'protein' },
+        { text: 'Keterangan', value: 'protein' },
+        { text: 'Actions', value: 'actions', sortable: false },
+        ],
+        headersRiwayatPenghargaan: [
+        {
+          text: 'Jenis Pengharagaan',
+          align: 'start',
+          sortable: false,
+          value: 'name',
+        },
+        { text: 'Tanggal Diterima', value: 'protein' },
+        { text: 'Keterangan', value: 'protein' },
+        { text: 'Actions', value: 'actions', sortable: false },
+        ],
+        headersTeguranLisan: [
+        {
+          text: 'Jenis Pelanggaran',
+          align: 'start',
+          sortable: false,
+          value: 'name',
+        },
+        { text: 'Tanggal Dikeluarkan', value: 'protein' },
+        { text: 'Kesalahan', value: 'protein' },
+        { text: 'Keterangan', value: 'protein' },
+        { text: 'Actions', value: 'actions', sortable: false },
+        ],
+        headersSuratPeringatan: [
+        {
+          text: 'Jenis Surat Peringatan',
+          align: 'start',
+          sortable: false,
+          value: 'name',
+        },
+        { text: 'Tanggal Dikeluarkan', value: 'protein' },
+        { text: 'Masa Berlaku', value: 'protein' },
+        { text: 'Kesalahan', value: 'protein' },
+        { text: 'Keterangan', value: 'protein' },
+        { text: 'Actions', value: 'actions', sortable: false },
+        ],
+        headersPenilaiian: [
+        {
+          text: 'Tanggal',
+          align: 'start',
+          sortable: false,
+          value: 'name',
+        },
+        { text: 'Nilai', value: 'protein' },
+        { text: 'Keterangan', value: 'protein' },
+        { text: 'Actions', value: 'actions', sortable: false },
+        ],
+        headersAsetPerusahaan: [
+                {
+          text: 'Jenis',
+          align: 'start',
+          sortable: false,
+          value: 'name',
+        },
+        { text: 'Tanggal Diberikan', value: 'protein' },
+        { text: 'Nomor', value: 'protein' },
+        { text: 'Jumlah', value: 'protein' },
+        { text: 'Tanggal Berakhir', value: 'protein' },
+        { text: 'Actions', value: 'actions', sortable: false },
+        ],
       desserts: [],
       editedIndex: -1,
       editedItem: {
@@ -1059,6 +2049,25 @@
       },
       formTitle () {
         return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+      },
+      fields () {
+        if (!this.model) return []
+
+        return Object.keys(this.model).map(key => {
+          return {
+            key,
+            value: this.model[key] || 'n/a',
+          }
+        })
+      },
+      items () {
+        return this.entries.map(entry => {
+          const Description = entry.Description.length > this.descriptionLimit
+            ? entry.Description.slice(0, this.descriptionLimit) + '...'
+            : entry.Description
+
+          return Object.assign({}, entry, { Description })
+        })
       },
     },
     methods: {
@@ -1141,6 +2150,29 @@
       },
       dialogDelete (val) {
         val || this.closeDelete()
+      },
+      search (val) {
+        console.log(val);
+        // Items have already been loaded
+        if (this.items.length > 0) return
+
+        // Items have already been requested
+        if (this.isLoading) return
+
+        this.isLoading = true
+
+        // Lazily load input items
+        fetch('https://api.publicapis.org/entries')
+          .then(res => res.json())
+          .then(res => {
+            const { count, entries } = res
+            this.count = count
+            this.entries = entries
+          })
+          .catch(err => {
+            console.log(err)
+          })
+          .finally(() => (this.isLoading = false))
       },
     },
   }

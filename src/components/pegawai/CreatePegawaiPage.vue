@@ -70,7 +70,7 @@
                         </template>
                       </v-textarea>
                     </v-col>
-                    <v-col cols="12" sm="6">
+                    <v-col cols="12">
                       <v-autocomplete
                         v-model="provinsis"
                         :items="items"
@@ -78,32 +78,41 @@
                         :search-input.sync="search"
                         hide-no-data
                         hide-selected
-                        item-text="Description"
-                        item-value="API"
-                        label="Provinsi"
-                        placeholder="Nama Provinsi"
+                        item-text="nama_kabupaten"
+                        item-value="id"
+                        label="Kabupaten"
+                        placeholder="Nama Kabupaten"
                         prepend-icon="mdi-database-search"
                         return-object>    
                       </v-autocomplete>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                      <v-select 
-                        v-model="form.favoriteAnimal"
-                        :items="animals"
-                        :rules="rules.animal"
-                        color="pink"
-                        label="Kabupaten/Kota"
-                        required
-                      ></v-select>
+                      <v-divider></v-divider>
+                      <v-expand-transition>
+                        <v-list v-if="provinsis" class="red lighten-3">
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>{{provinsis.nama_kabupaten}}</v-list-item-title>
+                              <v-list-item-subtitle>Kabupaten</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>{{provinsis.provinsi.nama_provinsi}}</v-list-item-title>
+                              <v-list-item-subtitle>Provinsi</v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list>
+                      </v-expand-transition>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-text-field
                         label="NO HP"
                         type="number"
+                        v-model="nohp"
+                        :rules="noHPRules"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6">
-                      <v-radio-group v-model="row" row>
+                      <v-radio-group v-model="jenisKelamin" jenisKelamin>
                         <v-radio
                           label="LAKI-LAKI"
                           value="Pria"
@@ -116,9 +125,11 @@
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-text-field
+                        v-model="tempatLahir"
+                        :rules="textNoNullRules"
                         label="Tempat Lahir"
-                        type="number"
-                      ></v-text-field>
+                        required>    
+                      </v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <template>
@@ -131,7 +142,7 @@
                           min-width="auto">
                           <template v-slot:activator="{ on, attrs }">
                             <v-text-field
-                              v-model="date"
+                              v-model="tanggalLahir"
                               label="Tanggal Lahir"
                               prepend-icon="mdi-calendar"
                               readonly
@@ -141,7 +152,7 @@
                           </template>
                           <v-date-picker
                             ref="picker"
-                            v-model="date"
+                            v-model="tanggalLahir"
                             :max="new Date().toISOString().substr(0, 10)"
                             min="1950-01-01"
                             @change="save"
@@ -151,132 +162,75 @@
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-select 
-                        v-model="form.favoriteAnimal"
-                        :items="animals"
-                        :rules="rules.animal"
-                        color="pink"
+                        v-model="agama"
+                        :items="agamaItems"
+                        :rules="textNoNullRules"
                         label="Agama"
                         required
                       ></v-select>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-select 
-                        v-model="form.favoriteAnimal"
-                        :items="animals"
-                        :rules="rules.animal"
-                        color="pink"
+                        v-model="kawin"
+                        :items="statusPerkawinanItems"
+                        :rules="textNoNullRules"
                         label="Status Perkawinan"
                         required
                       ></v-select>
                     </v-col>
                     <v-col cols="12" sm="6">
-                      <v-radio-group v-model="row" row>
+                      <v-radio-group v-model="kewarganegaraan" kewarganegaraan>
                         <v-radio
-                          label="LAKI-LAKI"
-                          value="Pria"
+                          label="WNI"
+                          value="WNI"
                         ></v-radio>
                         <v-radio
-                          label="PEREMPUAN"
-                          value="Wanita"
+                          label="WNA"
+                          value="WNA"
                         ></v-radio>
                       </v-radio-group>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-select 
-                        v-model="form.favoriteAnimal"
-                        :items="animals"
-                        :rules="rules.animal"
-                        color="pink"
+                        v-model="golonganDarah"
+                        :items="golonganDarahItems"
+                        :rules="textNoNullRules"
                         label="Golongan Darah"
                         required
                       ></v-select>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-text-field
+                        v-model="bahasa"
+                        :rules="textNoNullRules"
                         label="Bahasa"
-                        type="number"
-                      ></v-text-field>
+                        required>    
+                      </v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-text-field
                         label="Suku"
-                        type="number"
-                      ></v-text-field>
+                        v-model="suku"
+                        :rules="textNoNullRules"
+                        required></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <v-text-field
                         label="Daerah Asal"
-                        type="number"
-                      ></v-text-field>
+                        v-model="daerahasal"
+                        :rules="imageRules"
+                        required></v-text-field>
                     </v-col>
-                    <v-col cols="12" sm="6">
-                      <v-file-input v-model="image" @change="onFileChange" />
-                      <v-img :src="imageUrl" />
+                    <v-col cols="12" sm="3">
+                      <v-file-input label="Foto" v-model="image" @change="onFileChange"/>
                     </v-col>
-                    <v-col cols="12">
-                      <v-checkbox
-                        v-model="form.terms"
-                        color="green"
-                      >
-                        <template v-slot:label>
-                          <div @click.stop="">
-                            Do you accept the
-                            <a href="#" @click.prevent="terms = true">terms</a>and<a href="#" @click.prevent="conditions = true">conditions?</a>
-                          </div>
-                        </template>
-                      </v-checkbox>
+                    <v-col cols="12" sm="3">
+                      <v-img :src="pegawaiImageUrl" />
                     </v-col>
                   </v-row>
                 </v-container>
-                <v-card-actions>
-                  <v-btn text @click="resetForm">
-                    Cancel
-                  </v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    :disabled="!formIsValid"
-                    text
-                    color="primary"
-                    type="submit"
-                  >Register
-                  </v-btn>
-                </v-card-actions>
               </v-form>
-              <v-dialog v-model="terms" width="70%">
-                <v-card>
-                  <v-card-title class="title">
-                    Terms
-                  </v-card-title>
-                  <v-card-text v-for="n in 5" :key="n">
-                    {{ content }}
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                  <v-btn text color="purple" @click="terms = false">
-                    Ok
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-            <v-dialog v-model="conditions" width="70%">
-              <v-card>
-                <v-card-title class="title">
-                  Conditions
-                </v-card-title>
-                <v-card-text v-for="n in 5" :key="n" >
-                  {{ content }}
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn 
-                    text
-                    color="purple"
-                    @click="conditions = false"
-                  >Ok</v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </v-card>
+            </v-card>
           </template>
         </v-expansion-panel-content>
       </v-expansion-panel>
@@ -1810,6 +1764,7 @@
 </template>
 
 <script>
+  import { kabupatenService } from '@/_services';
   export default {
     data () {
       const defaultForm = Object.freeze({
@@ -1847,14 +1802,46 @@
         namaPanggilan: "",
         alamat: "",
         textNoNullRules: [
-          (v) => !!v || "Nama Lengkap tidak valid",
-          (v) =>(v && v.length > 0) || "Nama Lengkap tidak bisa kosong",
+          (v) => !!v || "Data isian tidak valid",
+          (v) =>(v && v.length > 0) || "Data isian tidak bisa kosong",
         ],
 
-        row: null,
+        nohp: "",
+        noHPRules: [
+                  (v) => v.length == 12  || "Data Isian yang anda masukkan tidak valid",
+          (v) => Number.isInteger(Number(v)) || "Isian ini harus berupa angka",
+          (v) => v > 0 || "Isian angka yang anda masukkan tidak valid ",
+        ],
+        
+        jenisKelamin: "Pria",
+        
+        tempatLahir: "",
+        
+        tanggalLahir: null,
+
+        agamaItems: ["Islam", "Protestan", "Katolik", "Hindu", "Budha", "Lainnya"],
+        agama: "",
+
+        statusPerkawinanItems: ["Kawin", "Belum Kawin", "Cerai Hidup", "Cerai Mati"],
+        kawin: "",
+
+        kewarganegaraan: "WNI",
+        
+        golonganDarahItems: ["A", "AB", "B", "O"],
+        golonganDarah: "",
+
+        bahasa: "",
+
+        suku: "",
+
+        daerahasal: "",
+
+        imageRules: [
+        value => !value || value.size < 2000000 || 'Avatar size should be le'
+        ],
         image: undefined,
-        imageUrl: "",
-        date: null,
+        pegawaiImageUrl: "",
+
         menu: false,
         trip: {
           name: '',
@@ -2050,25 +2037,29 @@
       formTitle () {
         return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
       },
-      fields () {
-        if (!this.model) return []
 
-        return Object.keys(this.model).map(key => {
+      // auto complete feature
+      fields () {
+        if (!this.provinsis) return []
+
+        return Object.keys(this.provinsis).map(key => {
           return {
-            key,
-            value: this.model[key] || 'n/a',
+            key, value: this.provinsis[key] || 'n/a',
           }
         })
       },
+
       items () {
-        return this.entries.map(entry => {
-          const Description = entry.Description.length > this.descriptionLimit
-            ? entry.Description.slice(0, this.descriptionLimit) + '...'
-            : entry.Description
+        return this.entries.map( entry => {
+          var lengthDesc = entry.nama_kabupaten + " -> " + entry.provinsi.nama_provinsi
+          const Description = lengthDesc.length > this.descriptionLimit
+            ? lengthDesc.slice(0, this.descriptionLimit) + '...'
+            : lengthDesc
 
           return Object.assign({}, entry, { Description })
         })
       },
+      // end of auto complete feature
     },
     methods: {
       resetForm () {
@@ -2082,19 +2073,26 @@
       save (date) {
         this.$refs.menu.save(date)
       },
+
+      // FOR UPLOAD IMAGE FORM
       createImage(file) {
         const reader = new FileReader();
         reader.onload = e => {
-          this.imageUrl = e.target.result;
+          this.pegawaiImageUrl = e.target.result;
         };
         reader.readAsDataURL(file);
       },
+    
       onFileChange(file) {
+        
+        console.log(this.tanggalLahir);
+
         if (!file) {
           return;
         }
         this.createImage(file);
       },
+      // END FOR UPLOAD IMAGE FORM
 
       initialize () {
         this.desserts = [];
@@ -2151,28 +2149,36 @@
       dialogDelete (val) {
         val || this.closeDelete()
       },
+      // feature auto complete
       search (val) {
-        console.log(val);
-        // Items have already been loaded
-        if (this.items.length > 0) return
 
         // Items have already been requested
         if (this.isLoading) return
 
         this.isLoading = true
-
+        kabupatenService.searchAll(val).then(
+          prov => {
+            console.log(prov);
+            this.isLoading = false;
+            this.entries = prov; 
+          },
+          error => {
+            this.errors = error
+            this.isLoading = false;
+          }
+        );
         // Lazily load input items
-        fetch('https://api.publicapis.org/entries')
-          .then(res => res.json())
-          .then(res => {
-            const { count, entries } = res
-            this.count = count
-            this.entries = entries
-          })
-          .catch(err => {
-            console.log(err)
-          })
-          .finally(() => (this.isLoading = false))
+        // fetch('https://api.publicapis.org/entries')
+        //   .then(res => res.json())
+        //   .then(res => {
+        //     const { count, entries } = res
+        //     this.count = count
+        //     this.entries = entries
+        //   })
+        //   .catch(err => {
+        //     console.log(err)
+        //   })
+        //   .finally(() => (this.isLoading = false))
       },
     },
   }

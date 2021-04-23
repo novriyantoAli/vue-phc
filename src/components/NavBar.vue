@@ -64,9 +64,6 @@
             <v-toolbar-title>Personal History Card</v-toolbar-title>
             <div class="flex-grow-1"></div>
  
-            <v-btn icon>
-                <v-icon>mdi-heart</v-icon>
-            </v-btn>
             <v-menu left bottom>
                 <template v-slot:activator="{ on }">
                 <v-btn icon v-on="on">

@@ -112,7 +112,7 @@
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6">
-                      <v-radio-group v-model="jenisKelamin" jenisKelamin>
+                      <v-radio-group v-model="jenis_kelamin" jenis_kelamin>
                         <v-radio
                           label="LAKI-LAKI"
                           value="Pria"
@@ -239,7 +239,7 @@
         <v-expansion-panel-header v-slot="{ open }">
           <v-row no-gutters>
             <v-col cols="4">
-              DATA KELUARGA
+              KELUARGA
             </v-col>
             <v-col cols="8" class="text--secondary">
               <v-fade-transition leave-absolute>
@@ -256,16 +256,16 @@
         <v-expansion-panel-content>
           <template>
             <v-data-table
-              :headers="headers"
-              :items="desserts"
-              sort-by="calories"
+              :headers="headersDataKeluarga"
+              :items="dataKeluarga"
+              sort-by="Nama Keluarga"
               class="elevation-1">
               <template v-slot:top>
                 <v-toolbar flat>
-                  <v-toolbar-title>KELUARGA</v-toolbar-title>
+                  <v-toolbar-title>DATA KELUARGA</v-toolbar-title>
                   <v-divider class="mx-4" inset vertical></v-divider>
                   <v-spacer></v-spacer>
-                  <v-dialog v-model="dialog" max-width="700px">
+                  <v-dialog v-model="dataKeluargaDialog" max-width="700px">
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
                         color="primary"
@@ -285,11 +285,13 @@
                         <v-container>
                           <v-row>
                             <v-col cols="12" sm="6" md="4">
-                              <v-text-field v-model="editedItem.name" label="Nama Keluarga">
+
+                              <v-text-field v-model="dataKeluargaEditedItem.nama"
+                              label="Nama Keluarga">
                               </v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6" md="4">
-                              <v-radio-group v-model="row" row>
+                              <v-radio-group v-model="dataKeluargaEditedItem.jenis_kelamin" dataKeluargaEditedItem.jenis_kelamin>
                                 <v-radio label="LAKI-LAKI" value="Pria"></v-radio>
                                 <v-radio label="PEREMPUAN" value="Wanita"></v-radio>
                               </v-radio-group>
@@ -305,43 +307,46 @@
                                   min-width="auto">
                                   <template v-slot:activator="{ on, attrs }">
                                     <v-text-field
-                                      v-model="date"
+                                      v-model="dataKeluargaEditedItem.tanggal_lahir"
                                       label="Tanggal Lahir"
                                       prepend-icon="mdi-calendar"
                                       readonly
                                       v-bind="attrs"
                                       v-on="on">
+                                        
                                     </v-text-field>
                                   </template>
                                   <v-date-picker
                                     ref="picker"
-                                    v-model="date"
+                                    v-model="dataKeluargaEditedItem.tanggal_lahir"
                                     :max="new Date().toISOString().substr(0, 10)"
                                     min="1950-01-01"
-                                    @change="save">
+                                    @change="save">    
                                   </v-date-picker>
                                 </v-menu>
-                              </template>
+                              </template> 
                             </v-col>
                             <v-col cols="12" sm="6" md="4">
                               <v-select 
-                                v-model="form.favoriteAnimal"
-                                :items="animals"
-                                :rules="rules.animal"
-                                color="pink"
+                                v-model="dataKeluargaEditedItem.hubungan"
+                                :items="hubungans"
+                                :rules="textNoNullRules"
                                 label="Hubungan"
-                                required></v-select>
+                                required>    
+                              </v-select>
                             </v-col>
                             <v-col cols="12" sm="6" md="4">
                               <v-text-field
-                                v-model="editedItem.protein"
+                                v-model="dataKeluargaEditedItem.pendidikan"
                                 label="Pendidikan">
                               </v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6" md="4">
                               <v-text-field
-                                v-model="editedItem.protein"
-                                label="Pekerjaan">
+                                v-model="dataKeluargaEditedItem.pekerjaan"
+                                :rules="textNoNullRules"
+                                label="Pekerjaan"
+                                required>
                               </v-text-field>
                             </v-col>
                           </v-row>
@@ -352,26 +357,26 @@
                         <v-btn
                           color="blue darken-1"
                           text
-                          @click="close">
-                          Cancel
+                          @click="closeDataKeluarga">
+                          BATAL
                         </v-btn>
                         <v-btn
                           color="blue darken-1"
                           text
-                          @click="saveItem">
-                          Save
+                          @click="saveDataKeluargaItem">
+                          SIMPAN
                         </v-btn>
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
-                  <v-dialog v-model="dialogDelete" max-width="500px">
+                  <v-dialog v-model="dataKeluargaDialogDelete" max-width="500px">
                     <v-card>
                       <v-card-title class="headline">Apakah anda yakin ingin menghapus baris ini?
                       </v-card-title>
                       <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                        <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+                        <v-btn color="blue darken-1" text @click="closeDeleteDataKeluarga">BATAL</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteDataKeluargaItemConfirm">HAPUS</v-btn>
                         <v-spacer></v-spacer>
                       </v-card-actions>
                     </v-card>
@@ -379,15 +384,15 @@
                 </v-toolbar>
               </template>
               <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="editItem(item)">
+                <v-icon small class="mr-2" @click="editDataKeluargaItem(item)">
                   mdi-pencil
                 </v-icon>
-                <v-icon small @click="deleteItem(item)">
+                <v-icon small @click="deleteDataKeluargaItem(item)">
                   mdi-delete
                 </v-icon>
               </template>
               <template v-slot:no-data>
-                <v-btn color="primary" @click="initialize">
+                <v-btn color="primary" @click="initializeDataKeluarga">
                   Reset
                 </v-btn>
               </template>
@@ -407,10 +412,12 @@
                 <span v-if="open">Silahkan Masukkan Data Kontak Darurat</span>
                 <v-row v-else no-gutters style="width: 100%">
                   <v-col cols="6">
-                    ORANG KE I : {{ trip.start || 'Belum di isi' }}
+                    ORANG KE I : <span v-if="kontakDarurat.length == 1">{{ kontakDarurat[0].nama_lengkap }}</span> 
+                    <span v-else>Belum di isi</span>
                   </v-col>
                   <v-col cols="6">
-                    ORANG KE II : {{ trip.end || 'Belum di isi' }}
+                    ORANG KE II : <span v-if="kontakDarurat.length == 2">{{ kontakDarurat[1].nama_lengkap }}</span> 
+                    <span v-else>Belum di isi</span>
                   </v-col>
                 </v-row>
               </v-fade-transition>
@@ -429,7 +436,7 @@
                   <v-toolbar-title>DARURAT</v-toolbar-title>
                   <v-divider class="mx-4" inset vertical></v-divider>
                   <v-spacer></v-spacer>
-                  <v-dialog v-model="dialog" max-width="700px">
+                  <v-dialog v-model="kontakDaruratDialog" max-width="700px">
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
                         color="primary"
@@ -449,27 +456,27 @@
                         <v-container>
                           <v-row>
                             <v-col cols="12" sm="6" md="4">
-                              <v-text-field v-model="editedItem.name" label="Nama Lengkap">
+                              <v-text-field v-model="kontakDaruratEditedItem.nama_lengkap" label="Nama Lengkap">
                               </v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6" md="4">
-                              <v-text-field v-model="editedItem.name" label="Hubungan">
+                              <v-text-field v-model="kontakDaruratEditedItem.hubungan" label="Hubungan">
                               </v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6" md="4">
-                              <v-text-field v-model="editedItem.name" label="Alamat Rumah">
+                              <v-text-field v-model="kontakDaruratEditedItem.alamat_rumah" label="Alamat Rumah">
                               </v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6" md="4">
-                              <v-text-field v-model="editedItem.name" label="No. Telp Rumah">
+                              <v-text-field v-model="kontakDaruratEditedItem.no_telp_rumah" label="No. Telp Rumah">
                               </v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6" md="4">
-                              <v-text-field v-model="editedItem.name" label="No. Telp Kantor">
+                              <v-text-field v-model="kontakDaruratEditedItem.no_telp_kantor" label="No. Telp Kantor">
                               </v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6" md="4">
-                              <v-text-field v-model="editedItem.name" label="Keterangan">
+                              <v-text-field v-model="kontakDaruratEditedItem.keterangan" label="Keterangan">
                               </v-text-field>
                             </v-col>
                           </v-row>
@@ -1842,6 +1849,84 @@
         image: undefined,
         pegawaiImageUrl: "",
 
+        // DATA KELUARGA 
+        headersDataKeluarga: [
+        {
+          text: 'Nama Keluarga',
+          align: 'start',
+          sortable: false,
+          value: 'nama',
+        },
+        { text: 'Hubungan', value: 'hubungan' },
+        { text: 'Jenis Kelamin', value: 'jenis_kelamin' },
+        { text: 'Tanggal Lahir', value: 'tanggal_lahir' },
+        { text: 'Pendidikan', value: 'pendidikan' },
+        { text: 'Pekerjaan', value: 'pekerjaan' },
+        { text: 'Aksi', value: 'aksi', sortable: false },
+        ],
+        dataKeluarga: [],
+        dataKeluargaEditedIndex: -1,
+        dataKeluargaDialog: false,
+        dataKeluargaDialogDelete: false,
+        dataKeluargaEditedItem: {
+          nama: '',
+          jenisKelamin: 'Pria',
+          tanggalLahir: null,
+          hubungan: "",
+          pendidikan: "",
+          pekerjaan: "",
+        },
+        dataKeluargaDefaultItem: {
+          nama: '',
+          jenisKelamin: 'Pria',
+          tanggalLahir: null,
+          hubungan: "",
+          pendidikan: "",
+          pekerjaan: "",
+        },
+        hubungans: [
+        "Ayah", "Ibu", "Saudara", "Suami", "Istri", "Anak"
+        ],
+        // END DATA KELUARGA
+
+        // DATA KONTAK DARURAT
+        headersKontakDarurat: [
+        {
+          text: 'Nama Lengkap',
+          align: 'start',
+          sortable: false,
+          value: 'nama_lengkap',
+        },
+        { text: 'Hubungan', value: 'hubungan' },
+        { text: 'Alamat Rumah', value: 'alamat_rumah' },
+        { text: 'No. Telp Rumah', value: 'no_telp_rumah' },
+        { text: 'No. Telp Kantor', value: 'no_telp_kantor' },
+        { text: 'Keterangan', value: 'keterangan' },
+        { text: 'Aksi', value: 'aksi', sortable: false },
+        ],
+        kontakDarurat: [],
+        kontakDaruratEditedIndex: -1,
+        kontakDaruratDialog: false,
+        kontakDaruratDialogDelete: false,
+        kontakDaruratEditedItem: {
+          nama_lengkap: '',
+          hubungan: '',
+          alamat_rumah: '',
+          no_telp_rumah: '',
+          no_telp_kantor: '',
+          keterangan: '',
+        },
+        kontakDaruratDefaultItem: {
+          nama_lengkap: '',
+          hubungan: '',
+          alamat_rumah: '',
+          no_telp_rumah: '',
+          no_telp_kantor: '',
+          keterangan: ''
+        },
+        // END DATA KONTAK DARURAT
+
+
         menu: false,
         trip: {
           name: '',
@@ -1880,20 +1965,7 @@
         { text: 'Pekerjaan', value: 'protein' },
         { text: 'Actions', value: 'actions', sortable: false },
         ],
-        headersKontakDarurat: [
-        {
-          text: 'Nama Lengkap',
-          align: 'start',
-          sortable: false,
-          value: 'name',
-        },
-        { text: 'Hubungan', value: 'calories' },
-        { text: 'Alamat Rumah', value: 'fat' },
-        { text: 'No. Telp Rumah', value: 'carbs' },
-        { text: 'No. Telp Kantor', value: 'protein' },
-        { text: 'Keterangan', value: 'protein' },
-        { text: 'Actions', value: 'actions', sortable: false },
-        ],
+        
         headersRiwayatPendidikan: [
         {
           text: 'Tingkat Pendidikan',
@@ -2062,6 +2134,49 @@
       // end of auto complete feature
     },
     methods: {
+
+      // DATA KELUARGA TABLE OPERATION
+      initializeDataKeluarga () {
+        this.dataKeluarga = [];
+      },
+      saveDataKeluargaItem () {
+        if (this.dataKeluargaEditedIndex > -1) {
+          Object.assign(this.dataKeluarga[this.dataKeluargaEditedIndex], this.dataKeluargaEditedItem);
+        } else {
+          this.dataKeluarga.push(this.dataKeluargaEditedItem);
+        }
+        this.closeDataKeluarga();
+      },
+      editDataKeluargaItem (item) {
+        this.dataKeluargaEditedIndex = this.dataKeluarga.indexOf(item)
+        this.dataKeluargaEditedItem = Object.assign({}, item)
+        this.dataKeluargaDialog = true
+      },
+      closeDataKeluarga() {
+        this.dataKeluargaDialog = false
+        this.$nextTick(() => {
+          this.dataKeluargaEditedItem = Object.assign({}, this.dataKeluargaDefaultItem)
+          this.dataKeluargaEditedIndex = -1
+        })
+      },
+      closeDeleteDataKeluarga () {
+        this.dataKeluargaDialogDelete = false
+        this.$nextTick(() => {
+          this.dataKeluargaEditedItem = Object.assign({}, this.dataKeluargaDefaultItem)
+          this.dataKeluargaEditedIndex = -1
+        })
+      },
+      deleteDataKeluargaItem (item) {
+        this.dataKeluargaEditedIndex = this.dataKeluarga.indexOf(item)
+        this.dataKeluargaEditedItem = Object.assign({}, item)
+        this.dataKeluargaDialogDelete = true
+      },
+      deleteDataKeluargaItemConfirm () {
+        this.dataKeluarga.splice(this.dataKeluargaEditedIndex, 1);
+        this.closeDeleteDataKeluarga();
+      },
+      // END DATA KELUARGA TABLE OPERATION
+
       resetForm () {
         this.form = Object.assign({}, this.defaultForm)
         this.$refs.form.reset()
@@ -2140,15 +2255,25 @@
       },
     },
     watch: {
+      // FOR GENERAL DATEPICKER FEATURE
       menu (val) {
         val && setTimeout(() => (this.$refs.picker.activePicker = 'YEAR'))
       },
+      // END GENERAL DATEPICKER FEATURE
+
+      // FOR DATA KELUARGA FEATURE
+      dataKeluargaDialogDelete(val) {
+        val || this.closeDeleteDataKeluarga()
+      },
+
+      // END FOR DATA KELUARGA FEATURE
       dialog (val) {
         val || this.close()
       },
       dialogDelete (val) {
         val || this.closeDelete()
       },
+
       // feature auto complete
       search (val) {
 

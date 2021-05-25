@@ -15,8 +15,7 @@
                   prepend-icon="email"
                   type="number"
                   :rules="numberRules"
-                  required
-                >
+                  required>
                 </v-text-field>
 
                 <v-text-field

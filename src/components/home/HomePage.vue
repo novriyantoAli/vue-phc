@@ -47,7 +47,7 @@ export default {
 				this.errors = error
 				this.loading = false;
 			}
-      );
+		);
 	},
 }
 </script>
